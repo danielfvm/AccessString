@@ -1,4 +1,4 @@
-// cc SigMaker.c -o sigmaker -ludis86
+// cc AccessString.c -o accessstring -ludis86
 
 #include <sys/mman.h>
 #include <sys/stat.h>
@@ -13,7 +13,7 @@
 #include <libudis86/extern.h>
 #include <libudis86/types.h>
 
-#define MAX_RESULTS 64
+#define MAX_RESULTS 128
 
 #define USAGE "Usage:\n" \
               "  %s <file> <string> [max_offset]\n\n" \
@@ -72,7 +72,7 @@ int main(int argc, char** argv) {
     uint64_t str_addr[MAX_RESULTS];
     int str_addr_i = 0;
 
-    for (void* addr = memory; addr < memory + size; addr ++) {
+    for (void* addr = memory; addr < memory + size && str_addr_i < MAX_RESULTS; addr ++) {
         if (memcmp(addr, argv[2], strlen(argv[2])) == 0) {
             printf("Found string at: %lx\n", addr-memory);
             str_addr[str_addr_i] = addr-memory;
