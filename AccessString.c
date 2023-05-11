@@ -22,8 +22,8 @@
               "  max_offset Allow provided string to be offset by value, default 0\n"
 
 char noZero(char* start, char* end) {
-    while (start++ != end) {
-        if (*start == '\0') {
+    while (start++ < end) {
+        if (*start != '\n' && *start != '\t' && *start != '\r' && *start < ' ') {
             return 0;
         }
     }
@@ -97,6 +97,7 @@ int main(int argc, char** argv) {
     ud_set_input_buffer(&ud, memory, size);
 
     printf("Address   Code                               String     Text\n");
+
     while (ud_disassemble(&ud)) {
         const uint64_t offset = ud_insn_off(&ud);
         const size_t len = ud_insn_len(&ud);
@@ -108,10 +109,17 @@ int main(int argc, char** argv) {
             if (op->base != UD_R_RIP)
                 continue;
 
+            // skip if offset is 0 e.g.: byte [rip+0]
+            if (op->lval.sdword == 0)
+                continue;
+
+            // memory + ptr points at the string loaded with mmap
+            unsigned int ptr = offset + len + op->lval.sdword;
+
+            // print results
             for (int i = 0; i < str_addr_i; ++ i) {
-                unsigned int ptr = offset + len + op->lval.sdword;
                 if (ptr >= str_addr[i] - max_offset && ptr <= str_addr[i]) {
-                    if (!noZero((char*)memory + ptr, (char*)memory+str_addr[i]))
+                    if (!noZero((char*)memory + ptr, (char*)memory + str_addr[i]))
                         continue;
 
                     char string[50]; 
