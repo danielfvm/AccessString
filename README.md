@@ -1,7 +1,7 @@
 # AccessString
 A commandline tool for finding strings in binary files and the assembler
 code that access it.
-
+![output](https://github.com/danielfvm/AccessString/assets/23420640/7ae0bde3-5a30-4d0e-b2ec-2f9a69fa3704)
 
 # Usage
 ```
