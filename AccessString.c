@@ -21,6 +21,14 @@
               "  string     String to be referenced\n" \
               "  max_offset Allow provided string to be offset by value, default 0\n"
 
+char noZero(char* start, char* end) {
+    while (start++ != end) {
+        if (*start == '\0') {
+            return 0;
+        }
+    }
+    return 1;
+}
 
 int main(int argc, char** argv) {
     char* endptr = NULL;
@@ -101,20 +109,27 @@ int main(int argc, char** argv) {
                 continue;
 
             for (int i = 0; i < str_addr_i; ++ i) {
-                if (offset + len + op->lval.sdword >= str_addr[i] - max_offset && offset + len + op->lval.sdword <= str_addr[i]) {
+                unsigned int ptr = offset + len + op->lval.sdword;
+                if (ptr >= str_addr[i] - max_offset && ptr <= str_addr[i]) {
+                    if (!noZero((char*)memory + ptr, (char*)memory+str_addr[i]))
+                        continue;
+
                     char string[50]; 
                     memset(string, 0, 50);
-                    strncpy(string, memory + offset + len + op->lval.sdword, 49);
+                    strncpy(string, memory + ptr, 49);
 
                     printf("%-10lx%-35s#%-10lx", offset, code, str_addr[i]);
-                    for (int i = 0; i < 50; ++ i) {
-                        char c = *((char*)memory + offset + len + op->lval.sdword + i);
-                        if (c == '\0') 
-                            break;
-                        else if (c == '\n')
+                    int j;
+                    for (j = 0; j < 50; ++ j) {
+                        char c = *((char*)memory + offset + len + op->lval.sdword + j);
+                        if (c == '\n')
                             printf("\\n");
                         else if (c == '\t')
                             printf("\\t");
+                        else if (c == '\r')
+                            printf("\\r");
+                        else if (c < ' ') 
+                            break;
                         else
                             putchar(c);
                     }
